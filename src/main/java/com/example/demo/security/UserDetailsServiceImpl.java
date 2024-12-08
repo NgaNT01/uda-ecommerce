@@ -26,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = users.findByUsername(username);
         if (user == null) {
-            logger.warn("User not found");
+            logger.warn("Failed to login, user not found");
             throw new UsernameNotFoundException(username);
         }
 
