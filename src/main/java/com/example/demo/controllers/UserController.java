@@ -62,24 +62,29 @@ public class UserController {
 	
 	@PostMapping("/create")
 	public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
-		User user = new User();
-		user.setUsername(createUserRequest.getUsername());
-		Cart cart = new Cart();
-		cartRepository.save(cart);
-		user.setCart(cart);
-		user.setUsername(createUserRequest.getUsername());
+		try {
+			User user = new User();
+			user.setUsername(createUserRequest.getUsername());
+			Cart cart = new Cart();
+			cartRepository.save(cart);
+			user.setCart(cart);
+			user.setUsername(createUserRequest.getUsername());
 
-		if (!isPasswordValid(createUserRequest.getPassword()) ||
-				!createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
-			logger.info("UserController::createUser - Password is invalid, try again.");
-			return ResponseEntity.badRequest().build();
+			if (!isPasswordValid(createUserRequest.getPassword()) ||
+					!createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
+				logger.info("UserController::createUser - Password is invalid, try again.");
+				return ResponseEntity.badRequest().build();
+			}
+
+			user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
+			userRepository.save(user);
+
+			logger.info("UserController::createUser - Create user successful with username {}", user.getUsername());
+			return ResponseEntity.ok(user);
+		} catch (Exception e) {
+			logger.error("UserController::createUser - Error creating user with name {}", createUserRequest.getUsername());
+			return null;
 		}
-
-		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
-		userRepository.save(user);
-
-		logger.info("UserController::createUser - Create user successful with username {}", user.getUsername());
-		return ResponseEntity.ok(user);
 	}
 
 	private boolean isPasswordValid(String password) {
